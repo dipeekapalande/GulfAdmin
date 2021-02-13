@@ -9,8 +9,9 @@ $response="";
 
 						
 					
-							$response.="<div id='myItemListold'>
-								<ul>
+							$response.="<input type='button' name='del_item' value='Delete' onClick='deleteRow();' class='btn btn-danger'/>
+							<div id='myItemListold'>
+								<ul style='list-style:none'>
 									";
 									foreach($id  as $ca)
 									{
@@ -24,7 +25,7 @@ $response="";
 										  foreach($cursorcamel as $cucam)
 											{
 										
-										$response.="<li>".$cucam->camelname." - ".$cucam->camelnumber."</li>";
+										$response.="<DIV class='camelitem float-clear' style='clear:both;margin-top:2%'><DIV class='col-sm-1' style=''><input type='checkbox' class='cameldeleteclass' name='cameldelete[]' value=".$cucam->_id."></DIV><li>".$cucam->camelname." - ".$cucam->camelnumber." &nbsp;&nbsp;&nbsp;</li></DIV>";
 										
 											}
 									}

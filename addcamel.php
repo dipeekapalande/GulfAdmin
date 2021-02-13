@@ -153,11 +153,12 @@ ob_start();
 							<select class="form-control" class="camelcategory"  name="camelcategory" class="required">
 								
 									
-											<option value=""></option>
-											<option value=""></option>
-											<option value=""></option>
-											<option value=""></option>
-									
+											<option value="فطامين">فطامين</option>
+											<option value="حقائق">حقائق</option>
+											<option value="لقايا">لقايا</option>
+											<option value="يذاع">يذاع</option>
+											<option value="ثنايا">ثنايا</option>
+											<option value="حول">حول</option>
 								
 							</select>
 							

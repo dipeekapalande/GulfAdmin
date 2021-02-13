@@ -4,7 +4,7 @@
 	include('inc/aside.php');
 	
 	$filter = [];
-	$options = ['sort' => ['position' => -1]];	
+	$options = ['sort' => ['_id' => -1]];	
 	$query=new MongoDB\Driver\Query($filter,$options);
 	$cursor=$connection->executeQuery("gulf_racing.races",$query);
 	
@@ -526,7 +526,11 @@
 </script>
 <script>
   $(function () {
-    $('#example1').DataTable()
+$('#example1').DataTable
+	({ 
+       "order": [[ 0, "asc" ]] 
+    }); 
+   
     $('#example2').DataTable({
       'paging'      : true,
       'lengthChange': false,

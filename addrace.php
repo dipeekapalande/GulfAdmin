@@ -168,7 +168,33 @@ die();
   }
 ?>
 
-
+<div class="modal fade" id="modalForm" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                    <span class="sr-only">Close</span>
+                </button>
+                <h4 class="modal-title" id="myModalLabel">Add Camels Details</h4>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="modal-body" >
+			   
+            </div>
+            
+            <!-- Modal Footer -->
+			 <div class="modal-footer">
+				
+                <button type="button" class="btn btn-primary" data-dismiss="modal" style="margin-top: 4%;">Close</button>
+                <button type="button" class="btn btn-primary submitBtn" onclick="submitForm()" style="margin-top: 4%;">SUBMIT</button>
+					 
+            </div>
+        </div>
+    </div>
+</div>
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
@@ -377,11 +403,13 @@ die();
 							<div id="displayaddedcamelslist">
 							<br>
 							</div>
-							<input type="hidden" name="camellist" class="camellist form-control">
+							<input type="text" name="camellist" class="camellist form-control">
 						</div>
 						<div class="col-sm-12">
 						<br><br>
-						<label for="addcamels">إضافة الجمال / Add Camels</label>
+						<label for="addcamels">إضافة الجمال / Add Camels</label> <button class="btn btn-success userdetails" style="margin-bottom:1%;float:right">
+ <i class="fa fa-plus"></i> Add New Camel to the race
+</button> 
 						<br>
 						<!-- Search box. -->
 						   <input type="text" id="search" placeholder="Search here ..." class="form-control"/>
@@ -620,7 +648,7 @@ die();
 <!-- ./wrapper -->
 
 <!-- jQuery 3 -->
-<script src="bower_components/jquery/dist/jquery.min.js"></script>
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <!-- Bootstrap 3.3.7 -->
 <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 <!-- DataTables -->
@@ -636,7 +664,7 @@ die();
 <script src="dist/js/demo.js"></script>
 <!-- page script -->
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+   
     <link href="https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/js/select2.min.js"></script>
      <script type="text/javascript" src="script.js"></script>
@@ -679,11 +707,41 @@ $(document).ready(function() {
            });
        }
    });
+
+$(".userdetails").click(function(){
+			
+			
+			 // AJAX request
+			   $.ajax({
+				url: 'adddatacamelajax.php',
+				type: 'post',
+				
+				success: function(response){ 
+				//alert(response);
+				  // Add response in Modal body
+				  $('.modal-body').html(response);
+
+				  // Display Modal
+				  $('#modalForm').modal('show'); 
+				}
+			  });
+			
+		});
 });
 
 var camels=[];
 
 function addcamelRow() {
+	
+	var clist=$(".camellist").val();
+	if(clist=='')
+	{
+		
+	}
+	else{
+		camels = clist.split(',');
+	}
+	//alert(camels);
 	$('div.camelitems').each(function(index, item){
 		jQuery(':checkbox', this).each(function () {
             if ($(this).is(':checked')) {
@@ -693,7 +751,9 @@ function addcamelRow() {
             }
         });
 	});
-	
+	 camels = camels.filter(function(elem, index, self) {
+      return index === self.indexOf(elem);
+  });
 	$(".camellist").val(camels);
 	
 	console.log( camels );
@@ -716,6 +776,9 @@ function addcamelRow() {
                    $("#displayaddedcamelslist").html(html).show();
                }
            });
+		   
+	$("#search").val('');
+	$("#display").html("");
 	
    /* ul = document.createElement('ul');
 
@@ -727,6 +790,28 @@ function addcamelRow() {
 
 		li.innerHTML += item;
 	});*/
+}
+
+function deleteRow()
+{
+	
+		
+	$('DIV .camelitem').each(function(index, item){
+		jQuery(':checkbox', this).each(function () {
+            if ($(this).is(':checked')) {
+				$(item).remove();
+				//alert($(this).val());
+				var itemtoRemove = $(this).val();
+				//camel.splice($.inArray(itemtoRemove, camel),1);
+				var camel=$(".camellist").val();
+				var arr = camel.split(',');
+				arr.splice($.inArray(itemtoRemove, arr),1);
+				$(".camellist").val(arr);
+				//alert (camel);
+				console.log(arr);
+            }
+        });
+	});
 }
 	</script>
 <script type="text/javascript">
@@ -759,21 +844,41 @@ function addcamelRow() {
   })
 </script>
 <script>
-function submitofferForm(){
+function submitForm(){
    
 	var postData = new FormData($("#modal_form_id")[0]);
     
   
         $.ajax({
             type:'POST',
-            url:'addcategory.php',
+            url:'addcamelajaxbyrace.php',
            processData: false,
                                  contentType: false,
                                  data : postData,
                                  success:function(data){
-									 
+									 //alert(data);
                               		console.log(data);
-									window.location.href="category.php";
+									//window.location.href="addrace.php";
+									camels.push(data);
+console.log(camels);
+$(".camellist").val(camels);
+$.ajax({
+               //AJAX type is "Post".
+               type: "POST",
+               //Data will be sent to "ajax.php".
+               url: "ajax/showaddedcamel.php",
+               //Data, that will be sent to "ajax.php".
+               data: {
+                   //Assigning value of "name" into "search" variable.
+                   listcam: camels
+               },
+               //If result found, this funtion will be called.
+               success: function(html) {
+				 //  alert(html);
+                   //Assigning result to "display" div in "search.php" file.
+                   $("#displayaddedcamelslist").html(html).show();
+               }
+           });
                                  }
 		});
 	
@@ -798,76 +903,6 @@ function submitofferForm(){
 		var image=$("#image").val();
 		
 		
-		if(camelnumber.trim()=="")
-		  {
-			    alert("Please Enter the camel number");
-				$("#camelnumber").val('');
-				$("#camelnumber").focus();
-				return false;
-		  }
-		  else 
-		  {
-			  return true;
-		  }
-		if(cameldescription.trim()=="")
-		  {
-			    alert("Please Enter the camel description");
-				$("#cameldescription").val('');
-				$("#cameldescription").focus();
-				return false;
-		  }
-		  else 
-		  {
-			  return true;
-		  }
-		  
-		  if(age.trim()=="")
-		  {
-			    alert("Please Enter the age of the camel");
-				$("#age").val('');
-				$("#age").focus();
-				return false;
-		  }
-		  else 
-		  {
-			  return true;
-		  }
-		  
-		  if(fathername.trim()=="")
-		  {
-			    alert("Please Enter the Father name of the camel");
-				$("#fathername").val('');
-				$("#fathername").focus();
-				return false;
-		  }
-		  else 
-		  {
-			  return true;
-		  }
-		  
-		   if(mothername.trim()=="")
-		  {
-			    alert("Please Enter the Mother name of the camel");
-				$("#mothername").val('');
-				$("#mothername").focus();
-				return false;
-		  }
-		  else 
-		  {
-			  return true;
-		  }
-		  
-		    if(image.trim()=="")
-		  {
-			    alert("Please Enter the image of the camel");
-				$("#image").val('');
-				$("#image").focus();
-				return false;
-		  }
-		  else 
-		  {
-			  return true;
-		  }
 		  
 	}
 	
@@ -963,5 +998,7 @@ function checkcamel()
   
   
 </script>
+
+
 </body>
 </html>

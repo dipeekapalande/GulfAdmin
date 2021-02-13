@@ -6,8 +6,10 @@ ob_start();
 	
 	
 	if(isset($_POST['submit'])){
-
-	   $id = $_POST['id'];
+	
+	
+	
+	
 	   $racename=$_POST['racename'];
 	   $racedate=$_POST['racedate'];
 	   
@@ -39,62 +41,29 @@ ob_start();
 	   $youtubeurl=$_POST['youtubeurl'];
 	   $vimeourl=$_POST['vimeourl'];
 	   
-       $channelid=new MongoDB\BSON\ObjectId($_POST['channel_name']);
-		
-		$oldcamellist =$_POST['oldcamellist'];
-    	$urlarray = array(
+	   
+		$urlarray = array(
 		  'low'  => $lowurl,
 		  'med'  => $mediumurl,
 		  'high'  => $highurl,
 		  'ultra_high'  => $ultrahighurl,
 		  'youtube'  => $youtubeurl,
-		  'vimeo'  => $vimeourl
+		  'vimeo'  => $vimeourl,
    
-		);	
-		
+		);
+
 $camellist=$_POST['camellist'];
 $camellist22=array();
-
 if(empty($camellist))
 {
-	if(empty($oldcamellist))
-	{}
-	else{
-	$oldcamellist=explode(',',$oldcamellist);
-	foreach($oldcamellist as $key=>$c)
-	{
-		$camellist22[]=array(
-		'_id'=>new MongoDB\BSON\ObjectId(),
-		'camelid'=>new MongoDB\BSON\ObjectId($c),
-		'nomination'=>array()
-		);
-		
-	}
-	}
 }
 else
 {
-	if(empty($oldcamellist))
-	{
-		$newcamellist=explode(',',$camellist);
-		
 
-		foreach($newcamellist as $key=>$c)
-		{
-			$camellist22[]=array(
-			'_id'=>new MongoDB\BSON\ObjectId(),
-			'camelid'=>new MongoDB\BSON\ObjectId($c),
-			'nomination'=>array()
-			);
-			
-		}
-	}
-	else{
-	$oldcamellist=explode(',',$oldcamellist);
-	$newcamellist=explode(',',$camellist);
-	$result = array_merge($oldcamellist, $newcamellist);
+$newcamellist=explode(',',$camellist);
 
-	foreach($result as $key=>$c)
+
+	foreach($newcamellist as $key=>$c)
 	{
 		$camellist22[]=array(
 		'_id'=>new MongoDB\BSON\ObjectId(),
@@ -103,63 +72,90 @@ else
 		);
 		
 	}
-	}
 
-}	 
+}
 
-//Image Upload
+/*foreach($newcamellist as $key2=>$c) {
+   
+         $camellist22[$key2]=$d;
+    
+}
+print_r($camellist22);
+die();
+	   */
+	   $camel_status=1;
+	   /*$camellist=$_POST['camellist'];
+	  
+	  $newcamellist=array();
+	 foreach($camellist as $c)
+	 {
+		 $newcamellist[]=new MongoDB\BSON\ObjectId($c);
+	 }*/
+		
+		$channelid=new MongoDB\BSON\ObjectId($_POST['channel_name']);
+	  /*$gender=$_POST['gender'];
+      $fathername=$_POST['fathername'];
+	  $mothername=$_POST['mothername'];
+      
+	  $owner_id=$_POST['owner_name'];
+	  
+	  $own=new MongoDB\BSON\ObjectId($owner_id);
+	   
+	   
+	  $camel_status  = $_POST['camel_status'];
+      if($camel_status==1)
+	  {
+		  $s=true;
+	  }
+	  else
+	  {
+		  $s=false;
+	  }*/
 	
-	if($_FILES['image']['name']!="")
-	{
+		 //Image Upload
 				$imagename = $_FILES['image']['name'];
-			    $imagePath = $_FILES['image']['tmp_name'];
-			    $newName   = rand().$imagename;
-    			move_uploaded_file($imagePath,"images/".$newName);
-	}
-	else
-	{
-		if($_POST['oldimage']=='')
-		{
-			$newName='';
-		}
-		else{
-		$newName=$_POST['oldimage'];
-		}
-	}
-    	   
-	
-						  if(!$isTrending){
-					  
-							$flag = 5;
+				if($imagename=='')
+				{
+					$newName='';
+				}
+				else{
+					$imagePath = $_FILES['image']['tmp_name'];
+					$newName   = rand().$imagename;
+    			    move_uploaded_file($imagePath,"images/".$newName);
+    			    
+				}		
+	  
 
-						  }else{
-							 
-							 
-								$insRec       = new MongoDB\Driver\BulkWrite;
+      if(!$camel_status){
+  
+        $flag = 5;
 
+      }else{
+		  
+		 
+         
+           $insRec = new MongoDB\Driver\BulkWrite;
+		   
+		   //$answers->update(array('userId' => 1, 'questions.questionId' => '1'), array('$push' => array('questions.$.ans' => 'try2')));
 
-							  
-								$insRec->update(['_id'=>new MongoDB\BSON\ObjectID($id)],['$set' =>['racename'=>$racename,'racedate'=>$d,'racetime'=>$t,'duration'=>$durationtime,'isTrending'=>$s,'length'=>(double)$length,'channelid'=>$channelid,'camellist'=>$camellist22,'coverimage'=>$newName]], ['multi' => false, 'upsert' => false]);
+           $insRec->insert(['racename'=>$racename,'racedate'=>$d,'racetime'=>$t,'duration'=>$durationtime,'isTrending'=>$s,'length'=>(double)$length,'channelid'=>$channelid,'live_stream_urls'=>$urlarray,'camellist'=>$camellist22,'coverimage'=>$newName]);
+          
+           $writeConcern = new MongoDB\Driver\WriteConcern(MongoDB\Driver\WriteConcern::MAJORITY, 1000);
+         
+             $result       = $connection->executeBulkWrite('gulf_racing.races', $insRec, $writeConcern);
 
-										  
-								$writeConcern = new MongoDB\Driver\WriteConcern(MongoDB\Driver\WriteConcern::MAJORITY, 1000);
+          if($result->getInsertedCount()){
 
-										 
-								 $result = $connection->executeBulkWrite('gulf_racing.races', $insRec, $writeConcern);
+            $flag = 3;
 
-							  if($result->getModifiedCount()){
+          }else{
 
-								$flag = 3;
+            $flag = 2;
 
-							  }else{
-
-								$flag = 6;
-
-							  }
-							  
-						  }
-				
-	
+          }
+		  
+      }
+					
 	  //echo $flag;
 	 // die();
 	header("Location: race.php?flag=$flag");
@@ -171,19 +167,6 @@ else
 
   }
 ?>
-<style>
-
-
-.nav-tabs-custom>.nav-tabs>li.active {
-    border-top-color: #3c8dbc;
-    border-left: 3px solid #3c8dbc;
-    border-right: 3px solid #3c8dbc;
-}
-.nav-tabs-custom>.nav-tabs {
-   
-    border-bottom-color: #3c8dbc;
-}
-</style>
 
 <div class="modal fade" id="modalForm" role="dialog">
     <div class="modal-dialog">
@@ -194,7 +177,7 @@ else
                     <span aria-hidden="true">&times;</span>
                     <span class="sr-only">Close</span>
                 </button>
-                <h4 class="modal-title" id="myModalLabel">Add Camels Details</h4>
+                <h4 class="modal-title" id="myModalLabel">Camels Details</h4>
             </div>
             
             <!-- Modal Body -->
@@ -212,23 +195,21 @@ else
         </div>
     </div>
 </div>
-
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
       <h1>
-       تحرير السباق / Edit Race
+     إضافة سباق /   Add Race
        
       </h1>
       <ol class="breadcrumb">
         <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
-        <li><a href="#">السباق / Race</a></li>
-        <li class="active">Edit</li>
+        <li><a href="#">سباق / Race </a></li>
+        <li class="active">Add</li>
       </ol>
     </section>
-<!-- END ALERTS AND CALLOUTS -->
-     
+
     <!-- Main content -->
     <section class="content">
       <div class="row">
@@ -240,102 +221,31 @@ else
             </div>
             <!-- /.box-header -->
             <div class="box-body">
-			
-			 <!-- START CUSTOM TABS -->
-      <h2 class="page-header">تغيير تفاصيل السباق / Change Race Details</h2>
-
-      <div class="row">
-        <div class="col-md-12">
-          <!-- Custom Tabs -->
-          <div class="nav-tabs-custom">
-            <ul class="nav nav-tabs">
-              <li class="active" style="font-size: 20px;font-weight: 600;"><a href="#tab_1" data-toggle="tab">تفاصيل السباق الأساسية / Race Basic Details</a></li>
-              <li><a href="#tab_2" data-toggle="tab" style="font-size: 20px;font-weight: 600;">بث مباشر عناوين المواقع وإضافة الجمال / Live Streaming Urls  And Add Camels</a></li>
               
-             
-              <li class="pull-right"><a href="#" class="text-muted"><i class="fa fa-gear"></i></a></li>
-            </ul>
-            <div class="tab-content">
-              <div class="tab-pane active" id="tab_1">
-                <br>
-				<?php
-					$id    = $_GET['id'];
-
-					$result = array();
-
-					if($id){
-
-					  $filter = ['_id' => new MongoDB\BSON\ObjectID($id)];
-
-					  $options = [];
-
-					  $query = new MongoDB\Driver\Query($filter,$options);
-
-					  $cursor = $connection->executeQuery('gulf_racing.races', $query);
-					  
-					foreach($cursor as $row){
-						//print_r($row);
-						if (!empty($row->racedate))
-						{
-							$newd=$row->racedate;
-							$timestamp = $newd->__toString(); //ISO DATE Return form mongo database
-							$utcdatetime = new MongoDB\BSON\UTCDateTime($timestamp);
-							$datetime = $utcdatetime->toDateTime();
-							$time=$datetime->format(DATE_RSS);
-							$dateInUTC=$time;
-							$time = strtotime($dateInUTC.' UTC');
-							$dateInLocal = date("Y-m-d", $time);
-						}
-						if (!empty($row->racetime))
-						{
-							$newd1=$row->racetime;
-							$timestamp1 = $newd1->__toString(); //ISO DATE Return form mongo database
-							$utcdatetime1 = new MongoDB\BSON\UTCDateTime($timestamp1);
-							$datetime1 = $utcdatetime1->toDateTime();
-							$time1=$datetime1->format(DATE_RSS);
-							$dateInUTC1=$time1;
-							$time1 = strtotime($dateInUTC1.' UTC');
-							$dateInLocal1 = date("H:i:s", $time1);
-						}
-						
-						if (!empty($row->duration))
-						{
-							$newd2=$row->duration;
-							$timestamp2 = $newd2->__toString(); //ISO DATE Return form mongo database
-							$utcdatetime2 = new MongoDB\BSON\UTCDateTime($timestamp2);
-							$datetime2 = $utcdatetime2->toDateTime();
-							$time2=$datetime2->format(DATE_RSS);
-							$dateInUTC2=$time2;
-							$time2 = strtotime($dateInUTC2.' UTC');
-							$dateInLocal2= date("H:i:s", $time2);
-						}
-				?>
+				
 				<form enctype="multipart/form-data" method="POST">
                     <div class="form-group">
-							<input type="hidden" class="form-control" id="uid" name="id" value="<?php echo $row->_id;?>"/>
-							
-						
-						<input type="hidden" name="oldimage" value="<?=((!empty($row->coverimage))?$row->coverimage:"")?>"/>
-						
+						<input type="hidden" class="form-control" id="uid" name="id" value="<?php echo $row->_id;?>"/>
 						<div class="col-sm-6">
 							<label for="racename">اسم السباق / (Race Name)</label>
 							<input type="text" class="form-control" id="racename" name="racename" value="<?php if (!empty($row->racename)) { echo $row->racename;} else { echo "";}?>"  placeholder="Enter Race Name" required />
 						</div>
 						<div class="col-sm-6">
 							<label for="racedate">تاريخ السباق / (Race Date)</label>
-							<input type="date" class="form-control" id="racedate" name="racedate" value="<?php echo $dateInLocal;?>" placeholder="Enter Race Date" required />
+							<input type="date" class="form-control" id="racedate" name="racedate" value="<?php if (!empty($row->racedate)) { echo $row->racedate;} else { echo "";}?>" placeholder="Enter Race Date" required />
 						</div>
 						
 						<div class="col-sm-6">
-							<label for="racetime"> سباق الوقت / Race Time</label>
-							<input type="time" class="form-control" id="racetime" name="racetime" value="<?php if (!empty($row->racetime)) { echo $dateInLocal1;} else { echo "";}?>"  placeholder="Enter Race Time" required />
+							<label for="racetime">سباق الوقت / Race Time</label>
+							<input type="time" class="form-control" id="racetime" name="racetime" value="<?php if (!empty($row->racetime)) { echo $row->racetime;} else { echo "";}?>"  placeholder="Enter Race Time" required />
+						</div>
+						
+						<div class="col-sm-6">
+							<!--<label for="duration">Duration (In Minutes )</label>
+							<input type="text" class="form-control" id="duration" name="duration" value="<?php if (!empty($row->duration)) { echo $row->duration;} else { echo "";}?>"  placeholder="Enter Duration in Minutes" required />-->
 							
-						</div>
-						
-						<div class="col-sm-6">
 							<label for="duration">المدة (بالدقائق )  / Duration (Hour:Minute:Seconds:Milliseconds)</label>
-							<input type="time" class="form-control" id="duration" name="duration" list="limittimeslist" step="0.001" value="<?php if (!empty($row->duration)) { echo $dateInLocal2;} else { echo "";}?>"  placeholder="Enter Duration in Minutes" required />
-							
+							<input type="time" class="form-control" id="duration" name="duration" list="limittimeslist" step="0.001" value="<?php if (!empty($row->duration)) { echo $row->duration;} else { echo "";}?>"  placeholder="Enter Duration in Minutes" required />
 							
 							
 						</div>
@@ -353,7 +263,7 @@ else
 										foreach($cursor as $document)
 										{
 									?>
-											<option value="<?php echo $document->_id;?>" <?php if(!empty($row->isTrending)){if ($row->channelid==$document->_id) { echo "selected=selected";}} else { echo "Select Status";}?>><?php echo $document->channelheader;?></option>
+											<option value="<?php echo $document->_id;?>"><?php echo $document->channelheader;?></option>
 									<?php
 										}
 									?>
@@ -361,7 +271,74 @@ else
 							</select>
 							
 						</div>
+						<!--<div class="container col-md-12">	
+								<label for="status">Select Camels </label>
+								<p>Please Check the Camels Which will take participate in the race</p>
+						<div class="card-group"> 
+				  
+							//bootstrap card with 3 horizontal images
+							<div class="row"> 
 							
+													<?php
+														
+														$filter1 = [];
+														$options1 = ['sort' => ['position' => -1]];	
+														$query1=new MongoDB\Driver\Query($filter1,$options1);
+														$cursor1=$connection->executeQuery("gulf_racing.races",$query1);
+														$newcamelarray=array();
+														foreach($cursor1 as $d)
+														{
+															$newcamelarray[]=$d->camellist;
+														}
+														
+														$arraySingle = call_user_func_array('array_merge', $newcamelarray);
+														/*echo "<pre>";
+														print_r($newcamelarray);
+														print_r($arraySingle);
+														die();*/
+														$filter = [];
+														$options = ['sort' => ['position' => -1]];	
+														$query=new MongoDB\Driver\Query($filter,$options);
+														$cursor=$connection->executeQuery("gulf_racing.camels",$query);
+														foreach($cursor as $document)
+														{
+															//echo $document->_id;
+															
+															if(in_array($document->_id,$arraySingle))
+															{
+																//echo "here";
+															}
+														else{
+													?>
+															
+													
+													
+															<div class="col-md-1">
+																 <div class="checkbox">
+																	<label><input type="checkbox" value="<?=$document->_id?>" name="camellist[]">  </label>
+																</div>
+																</div>
+															<div class="card col-md-2"> 
+
+																	<img src="<?php echo "images/".((!empty($document->image))?$document->image:"noimage.jfif");?>" class="card-img-top" style="width:150px;height:150px;border:1px solid gray;margin:8% 0%;" id="oldimagepreview">
+																<div class="card-body"> 
+																	<h3 class="card-title"><?=((!empty($document->camelnumber))?$document->camelnumber:"")?></h3> 
+																	<p class="card-text"><?=((!empty($document->cameldescription))?$document->cameldescription:"")?></p> 
+																</div> 
+															</div> 
+								<?php
+														}
+														}
+													?>
+													
+													
+								 
+								
+							
+							</div>
+						</div>
+										
+						</div>	-->			
 						
 						<div class="col-sm-6">
 							<label for="isTrending">حالة الاتجاه / (Trending Status)</label>
@@ -377,163 +354,85 @@ else
 						</div>
 					
 						<div class="col-sm-6">
-							<label for="length">الطول ( بالمايلز ) / Length ( In Miles )</label>
+							<label for="length"> الطول ( بالمايلز ) / Length ( In Miles )</label>
 							<input type="text" class="form-control" id="length" name="length" value="<?php if (!empty($row->length)) { echo $row->length;} else { echo "";}?>"  placeholder="Enter Length of race in Miles" required />
 						</div>
 						
-						<div class="col-sm-6">
-								 
-								 <input type="submit" class="btn btn-success" value="submit" name="submit" style="margin-top:2%">
-							</div>
-				
-              </div>
-			  </div>
-              <!-- /.tab-pane -->
-              <div class="tab-pane" id="tab_2">
-               <div class="col-md-12 col-sm-12">
-							<br><br><br><br>
+						<div class="col-md-12 col-sm-12">
+							<label for="racename">URL البث المباشر / Live Streaming Urls</label>
 						</div>
-								<?php
-										
-										$allurls=$row->live_stream_urls;
-										//echo "<pre>";
-										//print_r($allurls);
-										//echo $allurls->high;
-										
-									?>
 						<div class="col-sm-6">
 							<label for="lowurl">منخفضه / Low</label>
-							<input type="text" class="form-control" id="lowurl" name="lowurl" value="<?php if (!empty($allurls->low)) { echo $allurls->low;} else { echo "";}?>"  placeholder="Enter URL for Low Resolution" readonly />
+							<input type="text" class="form-control" id="lowurl" name="lowurl" value="<?php if (!empty($row->lowurl)) { echo $row->lowurl;} else { echo "";}?>"  placeholder="Enter URL for Low Resolution"  required />
 						</div>
 						<div class="col-sm-6">
 							<label for="mediumurl">متوسط / Medium</label>
-							<input type="text" class="form-control" id="mediumurl" name="mediumurl" value="<?php if (!empty($allurls->med)) { echo $allurls->med;} else { echo "";}?>"  placeholder="Enter URL for Medium Resolution" readonly />
+							<input type="text" class="form-control" id="mediumurl" name="mediumurl" value="<?php if (!empty($row->mediumurl)) { echo $row->mediumurl;} else { echo "";}?>"  placeholder="Enter URL for Medium Resolution" required />
 						</div>
 						
 						<div class="col-sm-6">
 							<label for="highurl">عاليه / High</label>
-							<input type="text" class="form-control" id="highurl" name="highurl" value="<?php if (!empty($allurls->high)) { echo $allurls->high;} else { echo "";}?>"  placeholder="Enter URL for High Resolution" readonly />
+							<input type="text" class="form-control" id="highurl" name="highurl" value="<?php if (!empty($row->highurl)) { echo $row->highurl;} else { echo "";}?>"  placeholder="Enter URL for High Resolution" required />
 						</div>
 						
 						<div class="col-sm-6">
 							<label for="ultrahighurl">عالية جدا / Ultra High</label>
-							<input type="text" class="form-control" id="ultrahighurl" name="ultrahighurl" value="<?php if (!empty($allurls->ultra_high)) { echo $allurls->ultra_high;} else { echo "";}?>"  placeholder="Enter URL for Ultra High Resolution" readonly />
+							<input type="text" class="form-control" id="ultrahighurl" name="ultrahighurl" value="<?php if (!empty($row->ultrahighurl)) { echo $row->ultrahighurl;} else { echo "";}?>"  placeholder="Enter URL for Ultra High Resolution" required />
 						</div>
 						
 						<div class="col-sm-6">
 							<label for="youtubeurl">يوتيوب / Youtube</label>
-							<input type="text" class="form-control" id="youtubeurl" name="youtubeurl" value="<?php if (!empty($allurls->youtube)) { echo $allurls->youtube;} else { echo "";}?>"  placeholder="Enter URL for Youtube " readonly />
+							<input type="text" class="form-control" id="youtubeurl" name="youtubeurl" value="<?php if (!empty($row->youtubeurl)) { echo $row->youtubeurl;} else { echo "";}?>"  placeholder="Enter URL for Youtube " required />
 						</div>
 					    <div class="col-sm-6">
 							<label for="vimeourl">فيميو  / Vimeo</label>
-							<input type="text" class="form-control" id="vimeourl" name="vimeourl" value="<?php if (!empty($allurls->vimeo)) { echo $allurls->vimeo;} else { echo "";}?>"  placeholder="Enter URL for Vimeo " readonly />
+							<input type="text" class="form-control" id="vimeourl" name="vimeourl" value="<?php if (!empty($row->vimeourl)) { echo $row->vimeourl;} else { echo "";}?>"  placeholder="Enter URL for Vimeo " required />
 						</div>
-						
 						<div class="col-sm-6">
-							<label class="control-label" for="inputPatient">صورة غطاء السباق / (Race Cover Picture)</label>
+							<label class="control-label" for="inputPatient"> صورة غطاء السباق / (Race Cover Picture)</label>
 							<div class="field desc">
-								<input class="form-control" id="image" name="image" placeholder="Image" type="file" onchange="return validateimage();">
+								<input class="form-control" id="image" name="image" placeholder="Image" type="file" onchange="return validateimage();"  >
 							</div>
 						</div>
-						<!-- Image preview -->
-						<img src="<?php echo "images/".((!empty($row->coverimage))?$row->coverimage:"noimage.jfif");?>" style="width:150px;height:150px;border-radius:50%;border:1px solid grey;margin:2% 0%" id="oldimagepreview">
+						
 						<div id="imagePreview"></div>
 						
-						
-						<?php
-							$camellist=$row->camellist;
-							
-							$listc=array_column($camellist,'camelid');
-							$abc=implode(",",$listc);
-							
-						?>
 						<div class="col-sm-12">
-						<input type="hidden" name="oldcamellist" class="oldcamellist form-control" value="<?=$abc?>">
-							<label for="addcamels">قوائم الجمل القديمة / Old Camel Lists</label>
-							<div id="myItemListold">
-							ملاحظة : حدد خانة الاختيار واضغط على زر الحذف <br><br>
-							Note : Select Checkbox and Press Delete Button<br><br>
-								<input type='button' name='del_itemold' value='Delete' onClick='deleteoldRow();' class='btn btn-danger'/>
-								<ul style='list-style:none'>
-									<?php
-									foreach($listc as $ca)
-									{
-										 $filtercamel = ['_id' => new MongoDB\BSON\ObjectID($ca)];
-
-										  $optionscamel = [];
-
-										  $querycamel = new MongoDB\Driver\Query($filtercamel,$optionscamel);
-
-										  $cursorcamel = $connection->executeQuery('gulf_racing.camels', $querycamel);
-										  foreach($cursorcamel as $cucam)
-											{
-										?>
-										<DIV class='camelolditem float-clear' style='clear:both;margin-top:2%'><DIV class='col-sm-1' style=''><input type='checkbox' class='camelolddeleteclass' name='camelolddelete[]' value="<?=$cucam->_id?>"></DIV><li><?=$cucam->camelname?> - <?=$cucam->camelnumber?> &nbsp;&nbsp;&nbsp;</li></DIV>
-										
-										<?php
-											}
-									}
-									?>
-								</ul>
-							</div>
-							
-						</div>
-						<div class="col-sm-12">
-						<br><br>
-							<label for="addcamels">قائمة الجمل المضافة حديثا / Newly Added Camel Lists</label>
+						<br>
+							<label for="addcamels">قوائم الجمل المضافة / Added Camel Lists</label>
 							<div id="displayaddedcamelslist">
+							<br>
 							</div>
-							<input type="hidden" name="camellist" class="camellist form-control" >
+							<input type="hidden" name="camellist" class="camellist form-control">
 						</div>
 						<div class="col-sm-12">
 						<br><br>
-							<label for="addcamels">إضافة الجمال / Add Camels</label>
-							<!--<button class="btn btn-success userdetails" style="margin-bottom:1%;float:right">
+						<label for="addcamels">إضافة الجمال / Add Camels</label> <button class="btn btn-success userdetails" >
  <i class="fa fa-plus"></i> Add New Camel to the race
-</button>--> <br>
-							<!-- Search box. -->
+</button> 
+						<br>
+						<!-- Search box. -->
 						   <input type="text" id="search" placeholder="Search here ..." class="form-control"/>
 						   <br>
-						    <b>Note / ملاحظه: </b><i>الرجاء إدخال رقم الجمل فقط / Please Enter camel number only</i>
-						   <br /><br>
+						   <b>Note / ملاحظه: </b><i>الرجاء إدخال رقم الجمل فقط / Please Enter camel number only</i>
+						   <br />
 						   <!-- Suggestions will be displayed in below div. -->
 						   <div id="display"></div>
 
 						</div>
-						
-					
-							<div class="col-sm-6">
+
+						<div class="col-sm-6">
 								 
-								 <input type="submit" class="btn btn-success" value="submit" name="submit" style="margin-top:2%">
-							</div>
+							<input type="submit" class="btn btn-success" value="submit" name="submit" style="margin-top:2%" onclick="return validate();">
+						</div>
 						
                     </div>
                  
 					
 				
                 </form>
-				<?php
-					}
-					}
-				  ?>
-                
-              </div>
-              <!-- /.tab-pane -->
-              
-              <!-- /.tab-pane -->
-            </div>
-            <!-- /.tab-content -->
-          </div>
-          <!-- nav-tabs-custom -->
-        </div>
-        <!-- /.col -->
-
-     
-      </div>
-      <!-- /.row -->
-      <!-- END CUSTOM TABS -->
-              
 				
+                
 			  
             </div>
             <!-- /.box-body -->
@@ -749,7 +648,7 @@ else
 <!-- ./wrapper -->
 
 <!-- jQuery 3 -->
-<script src="bower_components/jquery/dist/jquery.min.js"></script>
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <!-- Bootstrap 3.3.7 -->
 <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 <!-- DataTables -->
@@ -764,20 +663,12 @@ else
 <!-- AdminLTE for demo purposes -->
 <script src="dist/js/demo.js"></script>
 <!-- page script -->
-<script>
-  $(function () {
-    $('#example1').DataTable()
-    $('#example2').DataTable({
-      'paging'      : true,
-      'lengthChange': false,
-      'searching'   : false,
-      'ordering'    : true,
-      'info'        : true,
-      'autoWidth'   : false
-    })
-  })
-</script>
-<script>
+
+   
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/js/select2.min.js"></script>
+     <script type="text/javascript" src="script.js"></script>
+	 <script>
 //Getting value from "ajax.php".
 function fill(Value) {
    //Assigning value to "search" div in "search.php" file.
@@ -816,8 +707,8 @@ $(document).ready(function() {
            });
        }
    });
-   
-   $(".userdetails").click(function(){
+
+$(".userdetails").click(function(){
 			
 			
 			 // AJAX request
@@ -836,43 +727,38 @@ $(document).ready(function() {
 			  });
 			
 		});
-
 });
 
 var camels=[];
 
 function addcamelRow() {
+	
+	var clist=$(".camellist").val();
+	if(clist=='')
+	{
+		
+	}
+	else{
+		camels = clist.split(',');
+	}
+	//alert(camels);
 	$('div.camelitems').each(function(index, item){
 		jQuery(':checkbox', this).each(function () {
             if ($(this).is(':checked')) {
 				//$(item).remove();
-					var oldcamellist=$(".oldcamellist").val();
-					var arr = oldcamellist.split(',');
-					if ($.inArray($(this).val(), arr) > -1)
-					{
-						//yourElement in yourArray
-						//code here
-						alert("This Camel is already added in to the camel list.Please add another one.");
-					}
-					else
-					{
-						camels.push($(this).val());
-					}
+				
+				camels.push($(this).val());
             }
         });
 	});
-	camels = camels.filter(function(elem, index, self) {
-		  return index === self.indexOf(elem);
-	  });
-	
-
-
+	 camels = camels.filter(function(elem, index, self) {
+      return index === self.indexOf(elem);
+  });
 	$(".camellist").val(camels);
 	
 	console.log( camels );
-	if(camels.length === 0)
-{}
-else{
+	
+	
 	$.ajax({
                //AJAX type is "Post".
                type: "POST",
@@ -890,10 +776,10 @@ else{
                    $("#displayaddedcamelslist").html(html).show();
                }
            });
-}
 		   
 	$("#search").val('');
 	$("#display").html("");
+	
    /* ul = document.createElement('ul');
 
 	document.getElementById('myItemList').appendChild(ul);
@@ -927,27 +813,36 @@ function deleteRow()
         });
 	});
 }
-
-function deleteoldRow()
-{
-	$('DIV .camelolditem').each(function(index, item){
-		jQuery(':checkbox', this).each(function () {
-            if ($(this).is(':checked')) {
-				$(item).remove();
-				//alert($(this).val());
-				var itemtoRemove = $(this).val();
-				//camel.splice($.inArray(itemtoRemove, camel),1);
-				var camel=$(".oldcamellist").val();
-				var arr = camel.split(',');
-				arr.splice($.inArray(itemtoRemove, arr),1);
-				$(".oldcamellist").val(arr);
-				//alert (camel);
-				console.log(arr);
-            }
-        });
-	});
-}
 	</script>
+<script type="text/javascript">
+    $("#select2").select2({
+        templateResult: formatState
+    });
+    function formatState (state) {
+        if (!state.id) {
+            return state.text;
+        }
+        var baseUrl = "flags";
+        var $state = $(
+            '<span> ' + state.text + '</span>'
+        );
+        return $state;
+    }
+</script>
+
+<script>
+  $(function () {
+    $('#example1').DataTable()
+    $('#example2').DataTable({
+      'paging'      : true,
+      'lengthChange': false,
+      'searching'   : false,
+      'ordering'    : true,
+      'info'        : true,
+      'autoWidth'   : false
+    })
+  })
+</script>
 <script>
 function submitForm(){
    
@@ -961,34 +856,97 @@ function submitForm(){
                                  contentType: false,
                                  data : postData,
                                  success:function(data){
-									 //alert(data);
+									 alert(data);
                               		console.log(data);
-									//window.location.href="addrace.php";
-									camels.push(data);
-console.log(camels);
-$(".camellist").val(camels);
-$.ajax({
-               //AJAX type is "Post".
-               type: "POST",
-               //Data will be sent to "ajax.php".
-               url: "ajax/showaddedcamel.php",
-               //Data, that will be sent to "ajax.php".
-               data: {
-                   //Assigning value of "name" into "search" variable.
-                   listcam: camels
-               },
-               //If result found, this funtion will be called.
-               success: function(html) {
-				 //  alert(html);
-                   //Assigning result to "display" div in "search.php" file.
-                   $("#displayaddedcamelslist").html(html).show();
-               }
-           });
+									window.location.href="addrace.php";
                                  }
 		});
 	
 	}
-	 //Validate image formats
+	function onlyNumberKey(evt) { 
+          
+        // Only ASCII charactar in that range allowed 
+        var ASCIICode = (evt.which) ? evt.which : evt.keyCode 
+        if (ASCIICode > 31 && (ASCIICode < 48 || ASCIICode > 57)) 
+            return false; 
+        return true; 
+    } 
+	function validate()
+	{
+		//alert("here");
+		
+		var camelnumber=$("#camelnumber").val();
+		var cameldescription=$("#cameldescription").val();
+		var age=$("#age").val();
+		var fathername=$("#fathername").val();
+		var mothername=$("#mothername").val();
+		var image=$("#image").val();
+		
+		
+		  
+	}
+	
+	//To check duplicate email of the student 
+//By Dipeeka on 21st January 2020
+function checkduplicateemailoftheuser(email){
+	var emailvalue=email.value;
+	
+	$.ajax({
+		method:'GET',
+		url:'ajax/checkduplicateemail.php?email='+emailvalue,
+		   dataType:'JSON',
+		 success:function(data){
+				alert(data.message);
+				//alert($("#emailid").val());
+				//document.getElementById("emailid").reset();
+				$("#email").val('');
+			}
+	})
+   /* $.ajax({
+		
+			 url:'ajax/checkduplicateemail.php',
+			 dataType:'JSON',
+			 success:function(data){
+			}
+		)}*/
+}
+
+//search the camel
+/*
+var camels=[];
+function checkcamel()
+{
+	var keyword=$("#keyword").val();
+	
+	$.ajax({
+		method:'GET',
+		url:'ajax/checkcamel.php?keyword='+keyword,
+		  
+		 success:function(data){
+			 
+				alert(data);
+				
+				//alert(data.message);
+				
+				//alert(data.message[0]["oid"]);
+				camels.push(data.message);
+				
+				//alert($("#emailid").val());
+				//document.getElementById("emailid").reset();
+				//$(".camellist").val(camels);
+			}
+	})
+	$(".camellist").val(camels);
+	//console.log( camels );
+
+}
+*/
+
+
+
+			  
+			  
+  //Validate image formats
   //By Dipeeka Palande
   //on 6th January 2020
   function validateimage()
@@ -1004,13 +962,12 @@ $.ajax({
         }
 		else
 		{
-			$("#oldimagepreview").hide();
 			//Image preview
 			var fileInput = document.getElementById('image');
 			if (fileInput.files && fileInput.files[0]) {
 				var reader = new FileReader();
 				reader.onload = function(e) {
-					document.getElementById('imagePreview').innerHTML = '<img src="'+e.target.result+'"  style="width:150px;height:150px;border-radius:50%;border:1px solid grey;margin:2% 0%"/>';
+					document.getElementById('imagePreview').innerHTML = '<img src="'+e.target.result+'" height="100px" width="100px"/>';
 				};
 				reader.readAsDataURL(fileInput.files[0]);
 			}
@@ -1018,6 +975,10 @@ $.ajax({
 	  
 	  
   }
+  
+  
 </script>
+
+
 </body>
 </html>
